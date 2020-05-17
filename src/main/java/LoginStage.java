@@ -1,7 +1,4 @@
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.database.*;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -13,6 +10,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 import java.io.IOException;
 
@@ -20,15 +18,14 @@ import java.io.IOException;
  * Show login form
  */
 class LoginStage extends ServerService {
-    private String user;
-    private String pass;
+    private String nim;
 
     /**
-     * @param primaryStage Define Stage
+     * @param loginStage Define Stage
      * @throws IOException Handle Input Output
      */
-    LoginStage(Stage primaryStage) throws IOException {
-        primaryStage.setTitle("Login Project");
+    LoginStage(Stage loginStage) throws IOException {
+        loginStage.setTitle("Login");
 
         GridPane grid = new GridPane();
         grid.setAlignment(Pos.CENTER);
@@ -37,60 +34,49 @@ class LoginStage extends ServerService {
         grid.setPadding(new Insets(10, 10, 10, 10));
 
         Scene scene = new Scene(grid, 300, 275);
-        primaryStage.setScene(scene);
+        loginStage.setScene(scene);
 
         //Deklarasi obj yg digunakan.
-        Text scenetitle = new Text("Welcome");
+        Text scenetitle = new Text("Masuk");
         scenetitle.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
 
-        Label username = new Label("Username: ");
-        Label password = new Label("Password: ");
-        TextField userTextField = new TextField();
-        PasswordField pwBox = new PasswordField();
+        Label username = new Label("NIM: ");
+        TextField nimTextField = new TextField();
 
         //Menentukan Letak
         grid.add(scenetitle, 0, 0, 2, 1);
         grid.add(username, 0, 1);
-        grid.add(userTextField, 1, 1);
-        grid.add(password, 0, 2);
-        grid.add(pwBox, 1, 2);
+        grid.add(nimTextField, 1, 1);
 
-        Button In = new Button("Sign In");
-        Button Up = new Button("Sign Up");
+        Button In = new Button("Masuk");
+        Button Up = new Button("Daftar");
         HBox hbBtn = new HBox(10);
 
         hbBtn.setAlignment(Pos.BOTTOM_RIGHT);
         hbBtn.getChildren().add(In);
         hbBtn.getChildren().add(Up);
-        grid.add(hbBtn, 1, 4);
+        grid.add(hbBtn, 1, 3);
 
         Label st = new Label("");
         st.setAlignment(Pos.CENTER);
         st.setTextFill(Color.FIREBRICK);
-        grid.add(st, 1, 5);
+        grid.add(st, 1, 4);
 
         ValueEventListener AccountLogin = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                user = dataSnapshot
-                        .child("Account")
-                        .child("1")
-                        .child("username").getValue(String.class);
-                pass = dataSnapshot
-                        .child("Account")
-                        .child("1")
-                        .child("password").getValue(String.class);
+                User user = dataSnapshot.getValue(User.class);
+                System.out.println(user.getName());
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-
+                System.out.println("The read failed: " + databaseError.getCode());
             }
         };
-        FirebaseDatabase.getInstance().getReference().addListenerForSingleValueEvent(AccountLogin);
+        FirebaseDatabase.getInstance().getReference("Account").addListenerForSingleValueEvent(AccountLogin);
         In.setOnAction(e -> {
-            if (userTextField.getText().equalsIgnoreCase(user)
-                    && pwBox.getText().equalsIgnoreCase(pass)) {
+            if (nimTextField.getText().equalsIgnoreCase(nim)) {
                 st.setText("Login Berhasil");
             } else {
                 st.setText("Login Gagal");
@@ -98,14 +84,70 @@ class LoginStage extends ServerService {
         });
 
         Up.setOnAction(e -> {
-            FirebaseDatabase.getInstance().getReference().child("Account")
-                    .child("1")
-                    .child("username").setValue(userTextField.getText(), null);
+            Stage registerStage = new Stage();
+            registerStage.initStyle(StageStyle.UNDECORATED);
 
-            FirebaseDatabase.getInstance().getReference().child("Account")
-                    .child("1")
-                    .child("password").setValue(pwBox.getText(), null);
+            GridPane registerGrid = new GridPane();
+            registerGrid.setAlignment(Pos.CENTER);
+            registerGrid.setHgap(10);
+            registerGrid.setVgap(10);
+            registerGrid.setPadding(new Insets(10, 10, 10, 10));
+
+            Scene registerScene = new Scene(registerGrid, 300, 275);
+            registerStage.setScene(registerScene);
+
+            //Deklarasi obj yg digunakan.
+            Text registerSceneTitle = new Text("Daftar");
+            registerSceneTitle.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
+            registerGrid.add(registerSceneTitle, 0, 0, 2, 1);
+
+            Label nim = new Label("NIM: ");
+            TextField nimField = new TextField();
+            registerGrid.add(nim, 0, 1);
+            registerGrid.add(nimField, 1, 1);
+
+            Label name = new Label("Nama: ");
+            TextField nameField = new TextField();
+            registerGrid.add(name, 0, 2);
+            registerGrid.add(nameField, 1, 2);
+
+            Label major = new Label("Jurusan: ");
+            TextField majorField = new TextField();
+            registerGrid.add(major, 0, 3);
+            registerGrid.add(majorField, 1, 3);
+
+            Label grade = new Label("Kelas: ");
+            TextField gradeField = new TextField();
+            registerGrid.add(grade, 0, 4);
+            registerGrid.add(gradeField, 1, 4);
+
+            Button cancelButton = new Button("Batal");
+            Button signUpButton = new Button("Daftar");
+            HBox hbBtnRegister = new HBox(10, cancelButton, signUpButton);
+            registerGrid.add(hbBtnRegister, 1, 5);
+
+            cancelButton.setOnAction(event -> {
+                registerStage.close();
+            });
+
+            signUpButton.setOnAction(event -> {
+                Alert alertAdd = new Alert(Alert.AlertType.CONFIRMATION, "Apakah data anda sudah benar?", ButtonType.YES, ButtonType.NO);
+                alertAdd.showAndWait();
+                if (alertAdd.getResult() == ButtonType.YES) {
+                    createNewUser(nimField.getText(), nameField.getText(), majorField.getText(), gradeField.getText());
+                    Alert alertSuccess = new Alert(Alert.AlertType.NONE, "Pendaftaran anda berhasil. Silahkan masuk terlebih dahulu", ButtonType.YES);
+                    alertSuccess.show();
+                    registerStage.close();
+                }
+            });
+
+            registerStage.show();
         });
-        primaryStage.show();
+        loginStage.show();
+    }
+
+    public void createNewUser(String nim, String name, String major, String grade) {
+        User user = new User(name, major, grade);
+        FirebaseDatabase.getInstance().getReference().child("Account").child(nim).setValue(user, null);;
     }
 }
