@@ -1,4 +1,6 @@
 import com.google.firebase.database.*;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -10,6 +12,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.io.IOException;
 
@@ -18,6 +21,8 @@ import java.io.IOException;
  */
 class LoginStage extends ServerService {
     private String nim;
+    private int timeSeconds;
+    private Timeline timer;
 
     /**
      * @param loginStage Define Stage
@@ -66,6 +71,7 @@ class LoginStage extends ServerService {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if(dataSnapshot.hasChild(nimTextField.getText())){
                     nim = dataSnapshot.child(nimTextField.getText()).child("nim").getValue(String.class);
+                    timeSeconds = 0;
                     System.out.println(nim);
                 }
 
@@ -75,14 +81,27 @@ class LoginStage extends ServerService {
                 System.out.println("The read failed: " + databaseError.getCode());
             }
         };
-        
+
         In.setOnAction(e -> {
             FirebaseDatabase.getInstance().getReference("Account").addListenerForSingleValueEvent(AccountLogin);
-            if (nimTextField.getText().equalsIgnoreCase(nim)) {
-                st.setText("Login Berhasil");
-            } else {
-                st.setText("Login Gagal");
-            }
+            loginStage.setScene(new loading().getScene());
+            timeSeconds = 5;
+            try{
+                 timer = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
+                    timeSeconds--;
+                    if (timeSeconds <= 0) {
+                        loginStage.setScene(scene);
+                        if (nimTextField.getText().equalsIgnoreCase(nim)) {
+                            st.setText("Login Berhasil");
+                        } else {
+                            st.setText("Login Gagal");
+                        }
+                        timer.stop();
+                    }
+                }));
+                timer.setCycleCount(5);
+                timer.playFromStart();
+            }catch (NullPointerException ignored){ }
         });
 
         Up.setOnAction(e -> {
