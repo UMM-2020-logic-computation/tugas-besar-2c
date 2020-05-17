@@ -1,7 +1,4 @@
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.database.*;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -20,15 +17,14 @@ import java.io.IOException;
  * Show login form
  */
 class LoginStage extends ServerService {
-    private String user;
-    private String pass;
+    private String nim;
 
     /**
-     * @param primaryStage Define Stage
+     * @param loginStage Define Stage
      * @throws IOException Handle Input Output
      */
-    LoginStage(Stage primaryStage) throws IOException {
-        primaryStage.setTitle("Login Project");
+    LoginStage(Stage loginStage) throws IOException {
+        loginStage.setTitle("Login");
 
         GridPane grid = new GridPane();
         grid.setAlignment(Pos.CENTER);
@@ -37,60 +33,52 @@ class LoginStage extends ServerService {
         grid.setPadding(new Insets(10, 10, 10, 10));
 
         Scene scene = new Scene(grid, 300, 275);
-        primaryStage.setScene(scene);
+        loginStage.setScene(scene);
 
         //Deklarasi obj yg digunakan.
-        Text scenetitle = new Text("Welcome");
+        Text scenetitle = new Text("Masuk");
         scenetitle.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
 
-        Label username = new Label("Username: ");
-        Label password = new Label("Password: ");
-        TextField userTextField = new TextField();
-        PasswordField pwBox = new PasswordField();
+        Label username = new Label("NIM: ");
+        TextField nimTextField = new TextField();
 
         //Menentukan Letak
         grid.add(scenetitle, 0, 0, 2, 1);
         grid.add(username, 0, 1);
-        grid.add(userTextField, 1, 1);
-        grid.add(password, 0, 2);
-        grid.add(pwBox, 1, 2);
+        grid.add(nimTextField, 1, 1);
 
-        Button In = new Button("Sign In");
-        Button Up = new Button("Sign Up");
+        Button In = new Button("Masuk");
+        Button Up = new Button("Daftar");
         HBox hbBtn = new HBox(10);
 
         hbBtn.setAlignment(Pos.BOTTOM_RIGHT);
         hbBtn.getChildren().add(In);
         hbBtn.getChildren().add(Up);
-        grid.add(hbBtn, 1, 4);
+        grid.add(hbBtn, 1, 3);
 
         Label st = new Label("");
         st.setAlignment(Pos.CENTER);
         st.setTextFill(Color.FIREBRICK);
-        grid.add(st, 1, 5);
+        grid.add(st, 1, 4);
 
         ValueEventListener AccountLogin = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                user = dataSnapshot
-                        .child("Account")
-                        .child("1")
-                        .child("username").getValue(String.class);
-                pass = dataSnapshot
-                        .child("Account")
-                        .child("1")
-                        .child("password").getValue(String.class);
-            }
+                if(dataSnapshot.hasChild(nimTextField.getText())){
+                    nim = dataSnapshot.child(nimTextField.getText()).child("nim").getValue(String.class);
+                    System.out.println(nim);
+                }
 
+            }
             @Override
             public void onCancelled(DatabaseError databaseError) {
-
+                System.out.println("The read failed: " + databaseError.getCode());
             }
         };
-        FirebaseDatabase.getInstance().getReference().addListenerForSingleValueEvent(AccountLogin);
+        
         In.setOnAction(e -> {
-            if (userTextField.getText().equalsIgnoreCase(user)
-                    && pwBox.getText().equalsIgnoreCase(pass)) {
+            FirebaseDatabase.getInstance().getReference("Account").addListenerForSingleValueEvent(AccountLogin);
+            if (nimTextField.getText().equalsIgnoreCase(nim)) {
                 st.setText("Login Berhasil");
             } else {
                 st.setText("Login Gagal");
@@ -98,14 +86,11 @@ class LoginStage extends ServerService {
         });
 
         Up.setOnAction(e -> {
-            FirebaseDatabase.getInstance().getReference().child("Account")
-                    .child("1")
-                    .child("username").setValue(userTextField.getText(), null);
-
-            FirebaseDatabase.getInstance().getReference().child("Account")
-                    .child("1")
-                    .child("password").setValue(pwBox.getText(), null);
+            loginStage.setScene(new RegisterStage(loginStage, scene).getScene());
         });
-        primaryStage.show();
+
+
+
+        loginStage.show();
     }
 }
