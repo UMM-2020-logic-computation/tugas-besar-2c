@@ -35,9 +35,9 @@ jobs:
     # Telegram Notify
     - name: Notify Telegram
       uses: appleboy/telegram-action@0.0.3
-#       if: always()
-#       with:
-#         chat: ${{ secrets.chat }} # user id or channel name secret
-#         token: ${{ secrets.token }} # token secret
-#         status: ${{ job.status }} # do not modify this line
+      if: always()
+      with:
+        chat: ${{ secrets.chat }} # user id or channel name secret
+        token: ${{ secrets.token }} # token secret
+        status: ${{ job.status }} # do not modify this line
 
