@@ -95,16 +95,12 @@ class LoginStage extends ServerService {
         In.setOnAction(e -> {
             FirebaseDatabase.getInstance().getReference("Account").addListenerForSingleValueEvent(AccountLogin);
             loginStage.setScene(new Loading().getScene()); // Loading
-            timeSeconds = 5;
+            timeSeconds = 3;
             timer = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
                 timeSeconds--;
                 if (timeSeconds <= 0) {
                     if (nimTextField.getText().equalsIgnoreCase(nim)) {
-                        try {
-                            new ListTask(loginStage, user, scene);
-                        } catch (IOException ioException) {
-                            ioException.printStackTrace();
-                        }
+                        new ListTask(loginStage, user, scene);
                     } else {
                         loginStage.setScene(scene);
                     }
@@ -114,6 +110,7 @@ class LoginStage extends ServerService {
             timer.setCycleCount(5);
             timer.playFromStart();
         });
+
         In.disableProperty().bind(new BooleanBinding() {
             {
                 super.bind(nimTextField.textProperty());

@@ -1,3 +1,7 @@
+.root {
+    -fx-font-family: Helvetica, Arial, SansSerif;
+}
+
 .text-input-error {
     -fx-focus-color: #d35244;
     -fx-faint-focus-color: #d3524422;

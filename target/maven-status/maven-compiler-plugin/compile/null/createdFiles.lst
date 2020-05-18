@@ -1,4 +1,10 @@
-ServerService.class
+LoginStage$2.class
+LoginStage$1.class
+helper/Validation.class
 LoginStage.class
 Main.class
-LoginStage$1.class
+User.class
+ServerService.class
+Loading.class
+RegisterStage.class
+ListTask.class

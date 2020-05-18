@@ -15,7 +15,6 @@ import javafx.stage.Stage;
 import helper.Validation;
 import javafx.util.Duration;
 
-import java.io.IOException;
 
 public class RegisterStage {
 
