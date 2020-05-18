@@ -30,7 +30,6 @@ Berikan perubahan pada sebuah file, lalu lakukan Pull Requests. Nantinya kami ak
 
 ### Todos
 - [x] Menambahkan Firebase
-    - [ ] Akses firebase
 - [x] Menambahkan Login Window
     - [ ] Validation textField
     - [ ] Alert jika username/password salah
