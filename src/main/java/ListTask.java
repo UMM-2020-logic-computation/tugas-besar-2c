@@ -13,7 +13,7 @@ import javafx.stage.Stage;
 import java.io.IOException;
 
 public class ListTask {
-    public ListTask(Stage taskStage, User user) throws IOException {
+    public ListTask(Stage taskStage, User user, Scene loginScene) throws IOException {
         System.out.println(user.getName());
         taskStage.setTitle("Kerjain App");
 
@@ -46,10 +46,8 @@ public class ListTask {
                     "Anda yakin ingin keluar?", ButtonType.YES, ButtonType.NO);
             alertAdd.showAndWait();
             if (alertAdd.getResult() == ButtonType.YES) {
-                taskStage.close();
+                taskStage.setScene(loginScene);
                 new User().clearUser(); // Clear User
-
-                // @TODO: Setelah logout, kembali ke halaman login
             }
         });
 

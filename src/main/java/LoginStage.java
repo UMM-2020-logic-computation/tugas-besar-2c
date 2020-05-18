@@ -1,6 +1,8 @@
 import com.google.firebase.database.*;
+import helper.Validation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.beans.binding.BooleanBinding;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -15,7 +17,6 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.io.IOException;
-import helper.Validation;
 
 /**
  * Show login form
@@ -83,7 +84,6 @@ class LoginStage extends ServerService {
                     user = dataSnapshot.child(nimTextField.getText()).getValue(User.class);
                     timeSeconds = 0;
                 }
-                // @TODO: Ketika NIM tidak ditemukan loading diberhentikan
             }
 
             @Override
@@ -93,38 +93,38 @@ class LoginStage extends ServerService {
         };
 
         In.setOnAction(e -> {
-            if (!Validation.textIsEmpty(nimTextField)) {
                 FirebaseDatabase.getInstance().getReference("Account").addListenerForSingleValueEvent(AccountLogin);
                 loginStage.setScene(new Loading().getScene()); // Loading
                 timeSeconds = 5;
-                try {
-                    timer = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
-                        timeSeconds--;
-                        if (timeSeconds <= 0) {
-                            if (nimTextField.getText().equalsIgnoreCase(nim)) {
-                                loginStage.close();
-
-                                try {
-                                    Stage taskStage = new Stage();
-                                    new ListTask(taskStage, user);
-                                } catch (IOException ioException) {
-                                    ioException.printStackTrace();
-                                }
+                timer = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
+                    timeSeconds--;
+                    if (timeSeconds <= 0) {
+                        if (nimTextField.getText().equalsIgnoreCase(nim)) {
+                            try {
+                                new ListTask(loginStage, user, scene);
+                            } catch (IOException ioException) {
+                                ioException.printStackTrace();
                             }
-                            timer.stop();
+                        }else{
+                            loginStage.setScene(scene);
                         }
-                    }));
-                    timer.setCycleCount(5);
-                    timer.playFromStart();
-                } catch (NullPointerException error) {
-                    throw error;
-                }
+                        timer.stop();
+                    }
+                }));
+                timer.setCycleCount(5);
+                timer.playFromStart();
+        });
+        In.disableProperty().bind(new BooleanBinding() {
+            {
+                super.bind(nimTextField.textProperty());
+            }
+            @Override
+            protected boolean computeValue() {
+                return(Validation.textIsEmpty(nimTextField));
             }
         });
 
-        Up.setOnAction(e -> {
-            loginStage.setScene(new RegisterStage(loginStage, scene).getScene());
-        });
+        Up.setOnAction(e -> loginStage.setScene(new RegisterStage(loginStage, scene).getScene()));
 
         loginStage.show();
     }
