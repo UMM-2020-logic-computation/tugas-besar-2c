@@ -18,5 +18,4 @@ public class ServerService {
                 .build();
         FirebaseApp.initializeApp(options);
     }
-
 }

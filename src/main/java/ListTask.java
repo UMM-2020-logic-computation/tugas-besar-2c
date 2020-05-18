@@ -29,18 +29,18 @@ public class ListTask {
 
         Text sceneTaskTitle = new Text("Selamat datang,");
         sceneTaskTitle.setFont(Font.font("Tahoma", FontWeight.NORMAL, 22));
-        grid.add(sceneTaskTitle, 0,0,2,1);
+        grid.add(sceneTaskTitle, 0, 0, 2, 1);
 
         Text userTitle = new Text(user.getName());
         userTitle.setFont(Font.font("Tahoma", FontWeight.NORMAL, 14));
-        grid.add(userTitle, 0,1);
+        grid.add(userTitle, 0, 1);
 
         Text userDesc = new Text(user.getNim() + " | " + user.getMajor() + " | " + user.getGrade());
         userDesc.setFont(Font.font("Tahoma", FontWeight.NORMAL, 10));
-        grid.add(userDesc, 0,2);
+        grid.add(userDesc, 0, 2);
 
         Button buttonLogout = new Button("Keluar");
-        grid.add(buttonLogout, 2,1);
+        grid.add(buttonLogout, 2, 1);
         buttonLogout.setOnAction(e -> {
             Alert alertAdd = new Alert(Alert.AlertType.CONFIRMATION,
                     "Anda yakin ingin keluar?", ButtonType.YES, ButtonType.NO);

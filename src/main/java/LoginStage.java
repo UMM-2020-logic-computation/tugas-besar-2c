@@ -93,34 +93,35 @@ class LoginStage extends ServerService {
         };
 
         In.setOnAction(e -> {
-                FirebaseDatabase.getInstance().getReference("Account").addListenerForSingleValueEvent(AccountLogin);
-                loginStage.setScene(new Loading().getScene()); // Loading
-                timeSeconds = 5;
-                timer = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
-                    timeSeconds--;
-                    if (timeSeconds <= 0) {
-                        if (nimTextField.getText().equalsIgnoreCase(nim)) {
-                            try {
-                                new ListTask(loginStage, user, scene);
-                            } catch (IOException ioException) {
-                                ioException.printStackTrace();
-                            }
-                        }else{
-                            loginStage.setScene(scene);
+            FirebaseDatabase.getInstance().getReference("Account").addListenerForSingleValueEvent(AccountLogin);
+            loginStage.setScene(new Loading().getScene()); // Loading
+            timeSeconds = 5;
+            timer = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
+                timeSeconds--;
+                if (timeSeconds <= 0) {
+                    if (nimTextField.getText().equalsIgnoreCase(nim)) {
+                        try {
+                            new ListTask(loginStage, user, scene);
+                        } catch (IOException ioException) {
+                            ioException.printStackTrace();
                         }
-                        timer.stop();
+                    } else {
+                        loginStage.setScene(scene);
                     }
-                }));
-                timer.setCycleCount(5);
-                timer.playFromStart();
+                    timer.stop();
+                }
+            }));
+            timer.setCycleCount(5);
+            timer.playFromStart();
         });
         In.disableProperty().bind(new BooleanBinding() {
             {
                 super.bind(nimTextField.textProperty());
             }
+
             @Override
             protected boolean computeValue() {
-                return(Validation.textIsEmpty(nimTextField));
+                return (Validation.textIsEmpty(nimTextField));
             }
         });
 

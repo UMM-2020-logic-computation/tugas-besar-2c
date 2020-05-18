@@ -7,8 +7,8 @@ public class Validation {
      * Check if a TextField is Empty or not
      *
      * @param field TextField.
-     * @throws NullPointerException Jika field = null
      * @return boolean
+     * @throws NullPointerException Jika field = null
      */
     public static boolean textIsEmpty(TextField field) {
         try {

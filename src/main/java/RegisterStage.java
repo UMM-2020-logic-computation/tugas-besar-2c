@@ -20,7 +20,7 @@ public class RegisterStage {
      * @param primaryStage Define Stage from LoginStage
      * @param primaryScane Define Scene from LoginStage
      */
-    RegisterStage(Stage primaryStage, Scene primaryScane){
+    RegisterStage(Stage primaryStage, Scene primaryScane) {
         GridPane registerGrid = new GridPane();
         registerGrid.setAlignment(Pos.CENTER);
         registerGrid.setHgap(10);
@@ -85,7 +85,7 @@ public class RegisterStage {
         FirebaseDatabase.getInstance().getReference("Account").child(nim).child("grade").setValue(grade, null);
     }
 
-    Scene getScene(){
+    Scene getScene() {
         return scene;
     }
 }
