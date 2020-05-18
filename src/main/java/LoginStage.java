@@ -15,12 +15,14 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.io.IOException;
+import helper.Validation;
 
 /**
  * Show login form
  */
 class LoginStage extends ServerService {
     private String nim;
+    private User user;
     private int timeSeconds;
     private Timeline timer;
 
@@ -38,6 +40,7 @@ class LoginStage extends ServerService {
         grid.setPadding(new Insets(10, 10, 10, 10));
 
         Scene scene = new Scene(grid, 300, 275);
+        scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
         loginStage.setScene(scene);
 
         //Deklarasi obj yg digunakan.
@@ -46,6 +49,12 @@ class LoginStage extends ServerService {
 
         Label username = new Label("NIM: ");
         TextField nimTextField = new TextField();
+        // Input can only number
+        nimTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.matches("\\d*")) {
+                nimTextField.setText(newValue.replaceAll("[^\\d]", ""));
+            }
+        });
 
         //Menentukan Letak
         grid.add(scenetitle, 0, 0, 2, 1);
@@ -69,13 +78,14 @@ class LoginStage extends ServerService {
         ValueEventListener AccountLogin = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                if(dataSnapshot.hasChild(nimTextField.getText())){
+                if (dataSnapshot.hasChild(nimTextField.getText())) {
                     nim = dataSnapshot.child(nimTextField.getText()).child("nim").getValue(String.class);
+                    user = dataSnapshot.child(nimTextField.getText()).getValue(User.class);
                     timeSeconds = 0;
-                    System.out.println(nim);
                 }
-
+                // @TODO: Ketika NIM tidak ditemukan loading diberhentikan
             }
+
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 System.out.println("The read failed: " + databaseError.getCode());
@@ -83,32 +93,38 @@ class LoginStage extends ServerService {
         };
 
         In.setOnAction(e -> {
-            FirebaseDatabase.getInstance().getReference("Account").addListenerForSingleValueEvent(AccountLogin);
-            loginStage.setScene(new loading().getScene());
-            timeSeconds = 5;
-            try{
-                 timer = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
-                    timeSeconds--;
-                    if (timeSeconds <= 0) {
-                        loginStage.setScene(scene);
-                        if (nimTextField.getText().equalsIgnoreCase(nim)) {
-                            st.setText("Login Berhasil");
-                        } else {
-                            st.setText("Login Gagal");
+            if (!Validation.textIsEmpty(nimTextField)) {
+                FirebaseDatabase.getInstance().getReference("Account").addListenerForSingleValueEvent(AccountLogin);
+                loginStage.setScene(new Loading().getScene()); // Loading
+                timeSeconds = 5;
+                try {
+                    timer = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
+                        timeSeconds--;
+                        if (timeSeconds <= 0) {
+                            if (nimTextField.getText().equalsIgnoreCase(nim)) {
+                                loginStage.close();
+
+                                try {
+                                    Stage taskStage = new Stage();
+                                    new ListTask(taskStage, user);
+                                } catch (IOException ioException) {
+                                    ioException.printStackTrace();
+                                }
+                            }
+                            timer.stop();
                         }
-                        timer.stop();
-                    }
-                }));
-                timer.setCycleCount(5);
-                timer.playFromStart();
-            }catch (NullPointerException ignored){ }
+                    }));
+                    timer.setCycleCount(5);
+                    timer.playFromStart();
+                } catch (NullPointerException error) {
+                    throw error;
+                }
+            }
         });
 
         Up.setOnAction(e -> {
             loginStage.setScene(new RegisterStage(loginStage, scene).getScene());
         });
-
-
 
         loginStage.show();
     }
