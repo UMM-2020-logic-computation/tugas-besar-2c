@@ -91,12 +91,13 @@ public class RegisterStage {
                         timer = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
                             timeSeconds--;
                             if (timeSeconds <= 0) {
-                                Alert alertSuccess = new Alert(Alert.AlertType.NONE,
-                                        "Pendaftaran anda berhasil. Silahkan masuk terlebih dahulu", ButtonType.YES);
-                                alertSuccess.showAndWait();
-                                if (alertSuccess.getResult() == ButtonType.YES) {
+                                /* Error IligalArgumen*/
+                                //Alert alertSuccess = new Alert(Alert.AlertType.NONE,
+                                //        "Pendaftaran anda berhasil. Silahkan masuk terlebih dahulu", ButtonType.YES);
+                                //alertSuccess.showAndWait();
+                                //if (alertSuccess.getResult() == ButtonType.YES) {
                                     primaryStage.setScene(primaryScane);
-                                }
+                                //} @Todo <--@NoeSy(Ganti Alert menjadi notice setelah load gif)
                                 timer.stop();
                             }
                         }));

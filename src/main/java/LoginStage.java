@@ -95,7 +95,7 @@ class LoginStage extends ServerService {
         In.setOnAction(e -> {
             FirebaseDatabase.getInstance().getReference("Account").addListenerForSingleValueEvent(AccountLogin);
             loginStage.setScene(new Loading().getScene()); // Loading
-            timeSeconds = 3;
+            timeSeconds = 9;
             timer = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
                 timeSeconds--;
                 if (timeSeconds <= 0) {
@@ -107,7 +107,7 @@ class LoginStage extends ServerService {
                     timer.stop();
                 }
             }));
-            timer.setCycleCount(5);
+            timer.setCycleCount(10);
             timer.playFromStart();
         });
 

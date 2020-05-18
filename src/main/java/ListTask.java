@@ -1,5 +1,8 @@
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -19,7 +22,9 @@ import java.util.Objects;
 
 
 public class ListTask {
-    public ListTask(Stage taskStage, User user, Scene loginScene) {
+    private int countIndex;
+    private int indexTask;
+     ListTask(Stage taskStage, User user, Scene loginScene) {
         taskStage.setTitle("Kerjain App");
 
         GridPane grid = new GridPane();
@@ -96,21 +101,75 @@ public class ListTask {
         TableView<Tasks> tableTask = new TableView<Tasks>();
         tableTask.setPlaceholder(new Label("Anda tidak memiliki tugas"));
 
+        TableColumn<Tasks, String> numberColumn = new TableColumn<Tasks, String>("No");
+        numberColumn.setCellValueFactory(new PropertyValueFactory<>("number"));
+
         TableColumn<Tasks, String> titleColumn = new TableColumn<Tasks, String>("Judul");
         titleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
 
         TableColumn<Tasks, String> deadlineColumn = new TableColumn<Tasks, String>("Batas Waktu");
         deadlineColumn.setCellValueFactory(new PropertyValueFactory<>("deadline"));
 
-        tableTask.getColumns().addAll(titleColumn, deadlineColumn);
+        tableTask.getColumns().addAll(numberColumn, titleColumn, deadlineColumn);
 
         // Display row data
-        for (int i = 1; i <= 10; i++) {
-            tableTask.getItems().add(new Tasks(i + ". Tugas Besar 2C", "2020-12-12", "progress"));
-        }
+        ValueEventListener getTaks = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (int i = 1; dataSnapshot.child(user.getNim()).child("tasks").hasChild(String.valueOf(i)); i++) {
+                    tableTask.getItems().add(dataSnapshot.child(user.getNim()).child("tasks").child(String.valueOf(i)).getValue(Tasks.class));
+                    System.out.println(i);
+                    countIndex = i;
+                }
 
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                System.out.println("The read failed: " + databaseError.getCode());
+            }
+        };
+        FirebaseDatabase.getInstance().getReference("Account").addListenerForSingleValueEvent(getTaks);
         grid.add(tableTask, 0, 5);
 
+        tableTask.setOnMouseClicked(e ->{
+            indexTask = tableTask.getSelectionModel().getFocusedIndex() + 1;
+            System.out.println(indexTask);
+        });
+        buttonAdd.setOnAction(e -> {
+            tableTask.getItems().clear();
+            createNewTask(user.getNim(), dateField.getValue().toString(), titleField.getText(), countIndex);
+            FirebaseDatabase.getInstance().getReference("Account").addListenerForSingleValueEvent(getTaks);
+        });
+        doneTaskButton.setOnAction(event -> {
+            FirebaseDatabase.getInstance().getReference("Account").child(user.getNim()).child("tasks")
+                .child(String.valueOf(indexTask)).child("status").setValue("Done", null);
+        });
+        deleteTaskButton.setOnAction(event -> {
+            tableTask.getItems().clear();
+            deleteTask(user.getNim(), indexTask);
+            FirebaseDatabase.getInstance().getReference("Account").addListenerForSingleValueEvent(getTaks);
+        });
+
         taskStage.show();
+    }
+    private void createNewTask(String nim, String deadline, String title, int countIndex) {
+        FirebaseDatabase.getInstance().getReference("Account").child(nim).child("tasks")
+                .child(String.valueOf(countIndex + 1)).child("deadline").setValue(deadline, null);
+        FirebaseDatabase.getInstance().getReference("Account").child(nim).child("tasks")
+                .child(String.valueOf(countIndex + 1)).child("status").setValue("On Progress", null);
+        FirebaseDatabase.getInstance().getReference("Account").child(nim).child("tasks")
+                .child(String.valueOf(countIndex + 1)).child("title").setValue(title, null);
+        FirebaseDatabase.getInstance().getReference("Account").child(nim).child("tasks")
+                .child(String.valueOf(countIndex + 1)).child("number").setValue(String.valueOf(countIndex + 1), null);
+    }
+    private void deleteTask(String nim, int indexDelate) {
+        FirebaseDatabase.getInstance().getReference("Account").child(nim).child("tasks")
+                .child(String.valueOf(indexDelate)).child("deadline").removeValue(null);
+        FirebaseDatabase.getInstance().getReference("Account").child(nim).child("tasks")
+                .child(String.valueOf(indexDelate)).child("status").removeValue(null);
+        FirebaseDatabase.getInstance().getReference("Account").child(nim).child("tasks")
+                .child(String.valueOf(indexDelate)).child("title").removeValue(null);
+        FirebaseDatabase.getInstance().getReference("Account").child(nim).child("tasks")
+                .child(String.valueOf(indexDelate)).child("number").removeValue(null);
     }
 }
