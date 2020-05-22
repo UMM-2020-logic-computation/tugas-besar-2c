@@ -2,6 +2,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import helper.Validation;
 import javafx.beans.binding.BooleanBinding;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -19,7 +20,9 @@ import javafx.stage.Stage;
 
 import java.io.File;
 import java.util.Objects;
+import java.util.Random;
 
+import helper.RandomString;
 
 public class ListTask {
     ListTask(Stage taskStage, User user, Scene loginScene) {
@@ -85,14 +88,18 @@ public class ListTask {
             }
         });
         buttonAdd.disableProperty().bind(new BooleanBinding() {
-            {super.bind(
-                    titleField.textProperty(),
-                    dateField.getEditor().textProperty()
-            );}
+            {
+                super.bind(
+                        titleField.textProperty(),
+                        dateField.getEditor().textProperty()
+                );
+            }
+
             @Override
             protected boolean computeValue() {
                 return titleField.getText().isEmpty() || dateField.getEditor().getText().isEmpty();
-            }});
+            }
+        });
 
         Button doneTaskButton = new Button();
         Image doneIcon = new Image(new File(Objects.requireNonNull(this.getClass().getClassLoader().getResource("check.png").getPath())).toURI().toString());
@@ -116,7 +123,7 @@ public class ListTask {
 
         TableColumn<Tasks, String> numberColumn = new TableColumn<Tasks, String>("No");
         numberColumn.setCellValueFactory(new PropertyValueFactory<>("number"));
-        //numberColumn.setReorderable(false);\
+        numberColumn.setReorderable(false);
         numberColumn.setResizable(false);
         numberColumn.setCellFactory(col -> new TableCell<Tasks, String>() {
             @Override
@@ -132,15 +139,15 @@ public class ListTask {
 
         TableColumn<Tasks, String> titleColumn = new TableColumn<Tasks, String>("Judul");
         titleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
-        //titleColumn.setReorderable(false);
+        titleColumn.setReorderable(false);
 
         TableColumn<Tasks, String> deadlineColumn = new TableColumn<Tasks, String>("Batas Waktu");
         deadlineColumn.setCellValueFactory(new PropertyValueFactory<>("deadline"));
-        //deadlineColumn.setReorderable(false);
+        deadlineColumn.setReorderable(false);
 
         TableColumn<Tasks, String> statusColumn = new TableColumn<Tasks, String>("Status");
         statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
-        //statusColumn.setReorderable(false);
+        statusColumn.setReorderable(false);
 
         tableTask.getColumns().addAll(numberColumn, titleColumn, deadlineColumn, statusColumn);
 
@@ -165,40 +172,50 @@ public class ListTask {
 
         buttonAdd.setOnAction(e -> {
             createNewTask(user.getNim(), dateField.getValue().toString(), titleField.getText());
+            Alert alertSuccess = new Alert(Alert.AlertType.NONE, "Tugas berhasil ditambahkan", ButtonType.OK);
+            
             FirebaseDatabase.getInstance().getReference("Account").child(user.getNim()).child("tasks").addListenerForSingleValueEvent(getsTaks);
+            alertSuccess.show();
         });
 
         doneTaskButton.setOnAction(event -> {
-            Tasks task = tableTask.getSelectionModel().getSelectedItem(); // Get selected row
-            Alert alertSuccess = new Alert(Alert.AlertType.NONE,
-                    "Task ditandai 'Done'.", ButtonType.YES);
-            alertSuccess.showAndWait();
-            if(alertSuccess.getResult() == ButtonType.YES) {
+            Alert alertDone = new Alert(Alert.AlertType.CONFIRMATION, "Anda yakin tugas ini sudah selesai?", ButtonType.YES, ButtonType.NO);
+            alertDone.showAndWait();
+            if (alertDone.getResult() == ButtonType.YES) {
+                Tasks task = tableTask.getSelectionModel().getSelectedItem(); // Get selected row
                 FirebaseDatabase.getInstance().getReference("Account")
                         .child(user.getNim()).child("tasks").child(task.getId())
                         .child("status").setValue("Done", null);
+
+                Alert alertSuccess = new Alert(Alert.AlertType.NONE, "Tugas berhasil diperbarui", ButtonType.YES, ButtonType.NO);
+                alertSuccess.show();
+
                 FirebaseDatabase.getInstance().getReference("Account")
                         .child(user.getNim()).child("tasks").addListenerForSingleValueEvent(getsTaks);
             }
         });
 
         deleteTaskButton.setOnAction(event -> {
-            Tasks task = tableTask.getSelectionModel().getSelectedItem(); // Get selected row
-            Alert alertSuccess = new Alert(Alert.AlertType.NONE,
-                    "Task dihapus.", ButtonType.YES);
-            alertSuccess.showAndWait();
-            if(alertSuccess.getResult() == ButtonType.YES) {
+            Alert alertDelete = new Alert(Alert.AlertType.CONFIRMATION, "Anda yakin ingin menghapus tugas ini?", ButtonType.YES, ButtonType.NO);
+            alertDelete.showAndWait();
+            if (alertDelete.getResult() == ButtonType.YES) {
+                Tasks task = tableTask.getSelectionModel().getSelectedItem(); // Get selected row
                 deleteTask(user.getNim(), task.getId());
+
+                Alert alertSuccess = new Alert(Alert.AlertType.NONE, "Tugas berhasil dihapus", ButtonType.YES, ButtonType.NO);
+                alertSuccess.show();
+
                 FirebaseDatabase.getInstance().getReference("Account")
                         .child(user.getNim()).child("tasks").addListenerForSingleValueEvent(getsTaks);
-                }
+            }
         });
 
         taskStage.show();
     }
 
     private void createNewTask(String nim, String deadline, String title) {
-        String idTask = getAlphaNumericString(20); // Unique ID for Task
+        String idTask = new RandomString().generate(20); // Unique ID for Task
+
         FirebaseDatabase.getInstance().getReference("Account").child(nim).child("tasks")
                 .child(idTask).child("deadline").setValue(deadline, null);
         FirebaseDatabase.getInstance().getReference("Account").child(nim).child("tasks")
@@ -212,23 +229,5 @@ public class ListTask {
     private void deleteTask(String nim, String idTask) {
         FirebaseDatabase.getInstance().getReference("Account").child(nim).child("tasks")
                 .child(idTask).removeValue(null);
-    }
-
-    private static String getAlphaNumericString(int n) {
-        String AlphaNumericString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                + "0123456789"
-                + "abcdefghijklmnopqrstuvxyz";
-
-        StringBuilder sb = new StringBuilder(n);
-
-        for (int i = 0; i < n; i++) {
-            int index
-                    = (int) (AlphaNumericString.length()
-                    * Math.random());
-            sb.append(AlphaNumericString
-                    .charAt(index));
-        }
-
-        return sb.toString();
     }
 }
