@@ -45,4 +45,11 @@ public class User {
     public void setGrade(String grade) {
         this.grade = grade;
     }
+
+    public void clearUser() {
+        this.setNim(null);
+        this.setName(null);
+        this.setMajor(null);
+        this.setGrade(null);
+    }
 }
