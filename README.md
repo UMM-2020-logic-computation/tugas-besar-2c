@@ -31,11 +31,11 @@ Berikan perubahan pada sebuah file, lalu lakukan Pull Requests. Nantinya kami ak
 ### Todos
 - [x] Menambahkan Firebase
 - [x] Menambahkan Login Window
-    - [ ] Validation textField
+    - [x] Validation textField
     - [ ] Alert jika username/password salah
-- [ ] Menambahkan Register Window
-    - [ ] Validation textField
+- [x] Menambahkan Register Window
+    - [x] Validation textField
     - [ ] Alert jika username sudah terpakai
-- [ ] Menambahkan Task Window (Tambah, Daftar, Edit, Hapus)
-    - [ ] Input apa saja yang dibutuhkan
-    - [ ] Validation textField
+- [x] Menambahkan Task Window (Tambah, Daftar, Edit, Hapus)
+    - [x] Input apa saja yang dibutuhkan
+    - [x] Validation textField
