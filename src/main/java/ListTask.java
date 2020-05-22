@@ -2,7 +2,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import javafx.collections.ListChangeListener;
+import javafx.beans.binding.BooleanBinding;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -18,7 +18,6 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Objects;
 
 
@@ -80,6 +79,21 @@ public class ListTask {
         Button buttonAdd = new Button("Tambah Tugas");
         grid.add(buttonAdd, 1, 4);
 
+        dateField.getEditor().textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.matches("^[0-3]?[0-9]/[0-3]?[0-9]/(?:[0-9]{2})?[0-9]{2}$")) {
+                dateField.getEditor().setText(newValue.replaceAll("[^\\d]", ""));
+            }
+        });
+        buttonAdd.disableProperty().bind(new BooleanBinding() {
+            {super.bind(
+                    titleField.textProperty(),
+                    dateField.getEditor().textProperty()
+            );}
+            @Override
+            protected boolean computeValue() {
+                return titleField.getText().isEmpty() || dateField.getEditor().getText().isEmpty();
+            }});
+
         Button doneTaskButton = new Button();
         Image doneIcon = new Image(new File(Objects.requireNonNull(this.getClass().getClassLoader().getResource("check.png").getPath())).toURI().toString());
         ImageView doneIconView = new ImageView(doneIcon);
@@ -102,9 +116,9 @@ public class ListTask {
 
         TableColumn<Tasks, String> numberColumn = new TableColumn<Tasks, String>("No");
         numberColumn.setCellValueFactory(new PropertyValueFactory<>("number"));
-        numberColumn.setReorderable(false);
+        //numberColumn.setReorderable(false);\
         numberColumn.setResizable(false);
-        numberColumn.setCellFactory(col -> new TableCell<>() {
+        numberColumn.setCellFactory(col -> new TableCell<Tasks, String>() {
             @Override
             public void updateIndex(int index) {
                 super.updateIndex(index);
@@ -118,15 +132,15 @@ public class ListTask {
 
         TableColumn<Tasks, String> titleColumn = new TableColumn<Tasks, String>("Judul");
         titleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
-        titleColumn.setReorderable(false);
+        //titleColumn.setReorderable(false);
 
         TableColumn<Tasks, String> deadlineColumn = new TableColumn<Tasks, String>("Batas Waktu");
         deadlineColumn.setCellValueFactory(new PropertyValueFactory<>("deadline"));
-        deadlineColumn.setReorderable(false);
+        //deadlineColumn.setReorderable(false);
 
         TableColumn<Tasks, String> statusColumn = new TableColumn<Tasks, String>("Status");
         statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
-        statusColumn.setReorderable(false);
+        //statusColumn.setReorderable(false);
 
         tableTask.getColumns().addAll(numberColumn, titleColumn, deadlineColumn, statusColumn);
 
@@ -156,15 +170,28 @@ public class ListTask {
 
         doneTaskButton.setOnAction(event -> {
             Tasks task = tableTask.getSelectionModel().getSelectedItem(); // Get selected row
-            FirebaseDatabase.getInstance().getReference("Account").child(user.getNim()).child("tasks")
-                    .child(task.getId()).child("status").setValue("Done", null);
-            FirebaseDatabase.getInstance().getReference("Account").child(user.getNim()).child("tasks").addListenerForSingleValueEvent(getsTaks);
+            Alert alertSuccess = new Alert(Alert.AlertType.NONE,
+                    "Task ditandai 'Done'.", ButtonType.YES);
+            alertSuccess.showAndWait();
+            if(alertSuccess.getResult() == ButtonType.YES) {
+                FirebaseDatabase.getInstance().getReference("Account")
+                        .child(user.getNim()).child("tasks").child(task.getId())
+                        .child("status").setValue("Done", null);
+                FirebaseDatabase.getInstance().getReference("Account")
+                        .child(user.getNim()).child("tasks").addListenerForSingleValueEvent(getsTaks);
+            }
         });
 
         deleteTaskButton.setOnAction(event -> {
             Tasks task = tableTask.getSelectionModel().getSelectedItem(); // Get selected row
-            deleteTask(user.getNim(), task.getId());
-            FirebaseDatabase.getInstance().getReference("Account").child(user.getNim()).child("tasks").addListenerForSingleValueEvent(getsTaks);
+            Alert alertSuccess = new Alert(Alert.AlertType.NONE,
+                    "Task dihapus.", ButtonType.YES);
+            alertSuccess.showAndWait();
+            if(alertSuccess.getResult() == ButtonType.YES) {
+                deleteTask(user.getNim(), task.getId());
+                FirebaseDatabase.getInstance().getReference("Account")
+                        .child(user.getNim()).child("tasks").addListenerForSingleValueEvent(getsTaks);
+                }
         });
 
         taskStage.show();
@@ -187,7 +214,7 @@ public class ListTask {
                 .child(idTask).removeValue(null);
     }
 
-    static String getAlphaNumericString(int n) {
+    private static String getAlphaNumericString(int n) {
         String AlphaNumericString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                 + "0123456789"
                 + "abcdefghijklmnopqrstuvxyz";
