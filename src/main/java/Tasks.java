@@ -2,7 +2,7 @@ public class Tasks {
     private String title;
     private String deadline;
     private String status;
-    private String number;
+    private String id;
 
     public Tasks() {
         // Default constructor required for calls to DataSnapshot.getValue(Tasks.class)
@@ -37,11 +37,11 @@ public class Tasks {
         this.status = status;
     }
 
-    public String getNumber() {
-        return number;
+    public String getId() {
+        return id;
     }
 
-    public void setNumber(String number) {
-        this.number = number;
+    public void setId(String id) {
+        this.id = id;
     }
 }

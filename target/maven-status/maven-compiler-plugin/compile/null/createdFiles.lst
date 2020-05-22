@@ -1,8 +1,10 @@
 LoginStage$2.class
 LoginStage$1.class
+ListTask$1.class
 helper/Validation.class
 LoginStage.class
 Main.class
+Tasks.class
 User.class
 ServerService.class
 Loading.class

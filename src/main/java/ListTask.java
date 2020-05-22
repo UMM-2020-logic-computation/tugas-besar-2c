@@ -1,8 +1,8 @@
-
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import javafx.collections.ListChangeListener;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -18,13 +18,12 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Objects;
 
 
 public class ListTask {
-    private int countIndex;
-    private int indexTask;
-     ListTask(Stage taskStage, User user, Scene loginScene) {
+    ListTask(Stage taskStage, User user, Scene loginScene) {
         taskStage.setTitle("Kerjain App");
 
         GridPane grid = new GridPane();
@@ -103,73 +102,106 @@ public class ListTask {
 
         TableColumn<Tasks, String> numberColumn = new TableColumn<Tasks, String>("No");
         numberColumn.setCellValueFactory(new PropertyValueFactory<>("number"));
+        numberColumn.setReorderable(false);
+        numberColumn.setResizable(false);
+        numberColumn.setCellFactory(col -> new TableCell<>() {
+            @Override
+            public void updateIndex(int index) {
+                super.updateIndex(index);
+                if (isEmpty() || index < 0) {
+                    setText(null);
+                } else {
+                    setText(Integer.toString(index + 1));
+                }
+            }
+        });
 
         TableColumn<Tasks, String> titleColumn = new TableColumn<Tasks, String>("Judul");
         titleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
+        titleColumn.setReorderable(false);
 
         TableColumn<Tasks, String> deadlineColumn = new TableColumn<Tasks, String>("Batas Waktu");
         deadlineColumn.setCellValueFactory(new PropertyValueFactory<>("deadline"));
+        deadlineColumn.setReorderable(false);
 
-        tableTask.getColumns().addAll(numberColumn, titleColumn, deadlineColumn);
+        TableColumn<Tasks, String> statusColumn = new TableColumn<Tasks, String>("Status");
+        statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
+        statusColumn.setReorderable(false);
+
+        tableTask.getColumns().addAll(numberColumn, titleColumn, deadlineColumn, statusColumn);
 
         // Display row data
-        ValueEventListener getTaks = new ValueEventListener() {
+        ValueEventListener getsTaks = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                for (int i = 1; dataSnapshot.child(user.getNim()).child("tasks").hasChild(String.valueOf(i)); i++) {
-                    tableTask.getItems().add(dataSnapshot.child(user.getNim()).child("tasks").child(String.valueOf(i)).getValue(Tasks.class));
-                    System.out.println(i);
-                    countIndex = i;
+                tableTask.getItems().clear();
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    Tasks tasks = snapshot.getValue(Tasks.class);
+                    tableTask.getItems().add(tasks);
                 }
-
             }
+
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 System.out.println("The read failed: " + databaseError.getCode());
             }
         };
-        FirebaseDatabase.getInstance().getReference("Account").addListenerForSingleValueEvent(getTaks);
+        FirebaseDatabase.getInstance().getReference("Account").child(user.getNim()).child("tasks").addListenerForSingleValueEvent(getsTaks);
         grid.add(tableTask, 0, 5);
 
-        tableTask.setOnMouseClicked(e ->{
-            indexTask = tableTask.getSelectionModel().getFocusedIndex() + 1;
-            System.out.println(indexTask);
-        });
         buttonAdd.setOnAction(e -> {
-            tableTask.getItems().clear();
-            createNewTask(user.getNim(), dateField.getValue().toString(), titleField.getText(), countIndex);
-            FirebaseDatabase.getInstance().getReference("Account").addListenerForSingleValueEvent(getTaks);
+            createNewTask(user.getNim(), dateField.getValue().toString(), titleField.getText());
+            FirebaseDatabase.getInstance().getReference("Account").child(user.getNim()).child("tasks").addListenerForSingleValueEvent(getsTaks);
         });
+
         doneTaskButton.setOnAction(event -> {
+            Tasks task = tableTask.getSelectionModel().getSelectedItem(); // Get selected row
             FirebaseDatabase.getInstance().getReference("Account").child(user.getNim()).child("tasks")
-                .child(String.valueOf(indexTask)).child("status").setValue("Done", null);
+                    .child(task.getId()).child("status").setValue("Done", null);
+            FirebaseDatabase.getInstance().getReference("Account").child(user.getNim()).child("tasks").addListenerForSingleValueEvent(getsTaks);
         });
+
         deleteTaskButton.setOnAction(event -> {
-            tableTask.getItems().clear();
-            deleteTask(user.getNim(), indexTask);
-            FirebaseDatabase.getInstance().getReference("Account").addListenerForSingleValueEvent(getTaks);
+            Tasks task = tableTask.getSelectionModel().getSelectedItem(); // Get selected row
+            deleteTask(user.getNim(), task.getId());
+            FirebaseDatabase.getInstance().getReference("Account").child(user.getNim()).child("tasks").addListenerForSingleValueEvent(getsTaks);
         });
 
         taskStage.show();
     }
-    private void createNewTask(String nim, String deadline, String title, int countIndex) {
+
+    private void createNewTask(String nim, String deadline, String title) {
+        String idTask = getAlphaNumericString(20); // Unique ID for Task
         FirebaseDatabase.getInstance().getReference("Account").child(nim).child("tasks")
-                .child(String.valueOf(countIndex + 1)).child("deadline").setValue(deadline, null);
+                .child(idTask).child("deadline").setValue(deadline, null);
         FirebaseDatabase.getInstance().getReference("Account").child(nim).child("tasks")
-                .child(String.valueOf(countIndex + 1)).child("status").setValue("On Progress", null);
+                .child(idTask).child("status").setValue("On Progress", null);
         FirebaseDatabase.getInstance().getReference("Account").child(nim).child("tasks")
-                .child(String.valueOf(countIndex + 1)).child("title").setValue(title, null);
+                .child(idTask).child("title").setValue(title, null);
         FirebaseDatabase.getInstance().getReference("Account").child(nim).child("tasks")
-                .child(String.valueOf(countIndex + 1)).child("number").setValue(String.valueOf(countIndex + 1), null);
+                .child(idTask).child("id").setValue(idTask, null);
     }
-    private void deleteTask(String nim, int indexDelate) {
+
+    private void deleteTask(String nim, String idTask) {
         FirebaseDatabase.getInstance().getReference("Account").child(nim).child("tasks")
-                .child(String.valueOf(indexDelate)).child("deadline").removeValue(null);
-        FirebaseDatabase.getInstance().getReference("Account").child(nim).child("tasks")
-                .child(String.valueOf(indexDelate)).child("status").removeValue(null);
-        FirebaseDatabase.getInstance().getReference("Account").child(nim).child("tasks")
-                .child(String.valueOf(indexDelate)).child("title").removeValue(null);
-        FirebaseDatabase.getInstance().getReference("Account").child(nim).child("tasks")
-                .child(String.valueOf(indexDelate)).child("number").removeValue(null);
+                .child(idTask).removeValue(null);
+    }
+
+    static String getAlphaNumericString(int n) {
+        String AlphaNumericString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                + "0123456789"
+                + "abcdefghijklmnopqrstuvxyz";
+
+        StringBuilder sb = new StringBuilder(n);
+
+        for (int i = 0; i < n; i++) {
+            int index
+                    = (int) (AlphaNumericString.length()
+                    * Math.random());
+            sb.append(AlphaNumericString
+                    .charAt(index));
+        }
+
+        return sb.toString();
     }
 }
