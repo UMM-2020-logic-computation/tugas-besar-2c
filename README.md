@@ -15,10 +15,10 @@ Kerjain App membutuhkan beberapa tools dalam pengembangannya
 - [x] Menambahkan Firebase
 - [x] Menambahkan Login Window
     - [x] Validation textField
-    - [ ] Alert jika username/password salah
+    - [ ] Alert jika nim salah
 - [x] Menambahkan Register Window
     - [x] Validation textField
-    - [ ] Alert jika username sudah terpakai
+    - [ ] Alert jika nim sudah terpakai
 - [x] Menambahkan Task Window (Tambah, Daftar, Edit, Hapus)
     - [x] Input apa saja yang dibutuhkan
     - [x] Validation textField
