@@ -22,3 +22,6 @@ Kerjain App membutuhkan beberapa tools dalam pengembangannya
 - [x] Menambahkan Task Window (Tambah, Daftar, Edit, Hapus)
     - [x] Input apa saja yang dibutuhkan
     - [x] Validation textField
+
+### Ayo ikut Kontribusi   
+[Cara berkontribusi!](https://github.com/UMM-2020-logic-computation/tugas-besar-2c/wiki/Bagaimana-cara-ber-kontribusi-pada-project-ini%3F)
