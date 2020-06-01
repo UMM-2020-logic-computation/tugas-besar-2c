@@ -1,6 +1,7 @@
 import com.google.firebase.database.FirebaseDatabase;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.beans.binding.BooleanBinding;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -11,7 +12,6 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-
 import helper.Validation;
 import javafx.util.Duration;
 
@@ -72,10 +72,7 @@ public class RegisterStage {
         scene = new Scene(registerGrid, 300, 275);
         scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
 
-        cancelButton.setOnAction(event -> {
-            primaryStage.setScene(primaryScane);
-        });
-
+        cancelButton.setOnAction(event -> primaryStage.setScene(primaryScane));
         signUpButton.setOnAction(event -> {
             try {
                 if (!Validation.textIsEmpty(nimField) && !Validation.textIsEmpty(nameField)&& !Validation.textIsEmpty(majorField)&& !Validation.textIsEmpty(gradeField)) {
@@ -84,20 +81,12 @@ public class RegisterStage {
                     alertAdd.showAndWait();
                     if (alertAdd.getResult() == ButtonType.YES) {
                         primaryStage.setScene(new Loading().getScene()); // Loading
-
                         createNewUser(nimField.getText(), nameField.getText(), majorField.getText(), gradeField.getText());
                         timeSeconds = 5;
-
                         timer = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
                             timeSeconds--;
                             if (timeSeconds <= 0) {
-                                /* Error IligalArgumen*/
-                                //Alert alertSuccess = new Alert(Alert.AlertType.NONE,
-                                //        "Pendaftaran anda berhasil. Silahkan masuk terlebih dahulu", ButtonType.YES);
-                                //alertSuccess.showAndWait();
-                                //if (alertSuccess.getResult() == ButtonType.YES) {
-                                    primaryStage.setScene(primaryScane);
-                                //} @Todo <--@NoeSy(Ganti Alert menjadi notice setelah load gif)
+                                primaryStage.setScene(new Loading().getDaftarNoticeScene(primaryStage, primaryScane));
                                 timer.stop();
                             }
                         }));
@@ -107,6 +96,22 @@ public class RegisterStage {
                 }
             } catch (NullPointerException e) {
                 throw e;
+            }
+        });
+        signUpButton.disableProperty().bind(new BooleanBinding() {
+            {
+                super.bind(nimField.textProperty(),
+                        nameField.textProperty(),
+                        majorField.textProperty(),
+                        gradeField.textProperty());
+            }
+
+            @Override
+            protected boolean computeValue() {
+                return (Validation.textIsEmpty(nimField)  ||
+                        Validation.textIsEmpty(nameField) ||
+                        Validation.textIsEmpty(majorField)||
+                        Validation.textIsEmpty(gradeField));
             }
         });
     }
