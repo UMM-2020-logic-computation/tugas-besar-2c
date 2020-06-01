@@ -26,11 +26,11 @@ class Loading {
     }
     private int timeSeconds;
     private Timeline timer;
-    Scene getDaftarNoticeScene(Stage stage, Scene scene){
+    Scene getDaftarNoticeScene(Stage stage, Scene scene, String pesan){
         GridPane noticeGrid = new GridPane();
         noticeGrid.setAlignment(Pos.CENTER);
         noticeGrid.setPadding(new Insets(50, 50, 50, 50));
-        Label notice = new Label("Pendaftaran Berhasil!");
+        Label notice = new Label(pesan);
         notice.setFont(Font.font(17));
         noticeGrid.add(notice ,1,1);
         timeSeconds = 2;

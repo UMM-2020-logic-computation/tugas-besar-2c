@@ -1,4 +1,7 @@
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.binding.BooleanBinding;
@@ -21,6 +24,7 @@ public class RegisterStage {
     private Scene scene;
     private int timeSeconds;
     private Timeline timer;
+    private boolean nimCheck = false;
 
     /**
      * @param primaryStage Define Stage from LoginStage
@@ -85,9 +89,17 @@ public class RegisterStage {
                         timeSeconds = 5;
                         timer = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
                             timeSeconds--;
-                            if (timeSeconds <= 0) {
-                                primaryStage.setScene(new Loading().getDaftarNoticeScene(primaryStage, primaryScane));
+                            if (timeSeconds >= 9) {
+                                if(nimCheck)
+                                    primaryStage.setScene(new Loading().getDaftarNoticeScene(
+                                            primaryStage, primaryScane, "Pendaftaran Berhasil!"));
+                                else
+                                    primaryStage.setScene(new Loading().getDaftarNoticeScene(
+                                            primaryStage, scene, "Nim sudah terdaftar!"));
                                 timer.stop();
+                            }else if(timeSeconds <= 0){
+                                primaryStage.setScene(new Loading().getDaftarNoticeScene(
+                                        primaryStage, scene, "Cek Koneksi Internet Mu!"));
                             }
                         }));
                         timer.setCycleCount(5);
@@ -117,11 +129,26 @@ public class RegisterStage {
     }
 
     private void createNewUser(String nim, String name, String major, String grade) {
-        timeSeconds = 0;
-        FirebaseDatabase.getInstance().getReference("Account").child(nim).child("nim").setValue(nim, null);
-        FirebaseDatabase.getInstance().getReference("Account").child(nim).child("name").setValue(name, null);
-        FirebaseDatabase.getInstance().getReference("Account").child(nim).child("major").setValue(major, null);
-        FirebaseDatabase.getInstance().getReference("Account").child(nim).child("grade").setValue(grade, null);
+        ValueEventListener AccountLogin = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.child("Account").hasChild(nim)) {
+                    nimCheck = false;
+                }else{
+                    nimCheck = true;
+                    FirebaseDatabase.getInstance().getReference("Account").child(nim).child("nim").setValue(nim, null);
+                    FirebaseDatabase.getInstance().getReference("Account").child(nim).child("name").setValue(name, null);
+                    FirebaseDatabase.getInstance().getReference("Account").child(nim).child("major").setValue(major, null);
+                    FirebaseDatabase.getInstance().getReference("Account").child(nim).child("grade").setValue(grade, null);
+                }
+                timeSeconds = 100;
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                System.out.println("The read failed: " + databaseError.getCode());
+            }
+        };
+        FirebaseDatabase.getInstance().getReference().addListenerForSingleValueEvent(AccountLogin);
     }
 
     Scene getScene() {
