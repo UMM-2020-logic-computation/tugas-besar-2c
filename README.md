@@ -1,5 +1,5 @@
 # Kerjain App
-Kerjain App adalah aplikasi menejemen tugas yang harus dikerjakan dalam bentuk sebuah dafta.
+Kerjain App adalah aplikasi menejemen tugas yang harus dikerjakan dalam bentuk sebuah daftar.
 
 ### Kebutuhan
 
