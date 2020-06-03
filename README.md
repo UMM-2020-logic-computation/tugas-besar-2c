@@ -18,7 +18,7 @@ Kerjain App membutuhkan beberapa tools dalam pengembangannya
     - [ ] Alert jika nim salah
 - [x] Menambahkan Register Window
     - [x] Validation textField
-    - [ ] Alert jika nim sudah terpakai
+    - [x] Alert jika nim sudah terpakai
 - [x] Menambahkan Task Window (Tambah, Daftar, Edit, Hapus)
     - [x] Input apa saja yang dibutuhkan
     - [x] Validation textField
