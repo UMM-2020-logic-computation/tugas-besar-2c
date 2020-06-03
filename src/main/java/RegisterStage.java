@@ -1,6 +1,10 @@
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.beans.binding.BooleanBinding;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -11,7 +15,6 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-
 import helper.Validation;
 import javafx.util.Duration;
 
@@ -21,6 +24,7 @@ public class RegisterStage {
     private Scene scene;
     private int timeSeconds;
     private Timeline timer;
+    private boolean nimCheck = false;
 
     /**
      * @param primaryStage Define Stage from LoginStage
@@ -72,10 +76,7 @@ public class RegisterStage {
         scene = new Scene(registerGrid, 300, 275);
         scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
 
-        cancelButton.setOnAction(event -> {
-            primaryStage.setScene(primaryScane);
-        });
-
+        cancelButton.setOnAction(event -> primaryStage.setScene(primaryScane));
         signUpButton.setOnAction(event -> {
             try {
                 if (!Validation.textIsEmpty(nimField) && !Validation.textIsEmpty(nameField)&& !Validation.textIsEmpty(majorField)&& !Validation.textIsEmpty(gradeField)) {
@@ -84,21 +85,21 @@ public class RegisterStage {
                     alertAdd.showAndWait();
                     if (alertAdd.getResult() == ButtonType.YES) {
                         primaryStage.setScene(new Loading().getScene()); // Loading
-
                         createNewUser(nimField.getText(), nameField.getText(), majorField.getText(), gradeField.getText());
                         timeSeconds = 5;
-
                         timer = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
                             timeSeconds--;
-                            if (timeSeconds <= 0) {
-                                /* Error IligalArgumen*/
-                                //Alert alertSuccess = new Alert(Alert.AlertType.NONE,
-                                //        "Pendaftaran anda berhasil. Silahkan masuk terlebih dahulu", ButtonType.YES);
-                                //alertSuccess.showAndWait();
-                                //if (alertSuccess.getResult() == ButtonType.YES) {
-                                    primaryStage.setScene(primaryScane);
-                                //} @Todo <--@NoeSy(Ganti Alert menjadi notice setelah load gif)
+                            if (timeSeconds >= 9) {
+                                if(nimCheck)
+                                    primaryStage.setScene(new Loading().getDaftarNoticeScene(
+                                            primaryStage, primaryScane, "Pendaftaran Berhasil!"));
+                                else
+                                    primaryStage.setScene(new Loading().getDaftarNoticeScene(
+                                            primaryStage, scene, "Nim sudah terdaftar!"));
                                 timer.stop();
+                            }else if(timeSeconds <= 0){
+                                primaryStage.setScene(new Loading().getDaftarNoticeScene(
+                                        primaryStage, scene, "Cek Koneksi Internet Mu!"));
                             }
                         }));
                         timer.setCycleCount(5);
@@ -109,14 +110,45 @@ public class RegisterStage {
                 throw e;
             }
         });
+        signUpButton.disableProperty().bind(new BooleanBinding() {
+            {
+                super.bind(nimField.textProperty(),
+                        nameField.textProperty(),
+                        majorField.textProperty(),
+                        gradeField.textProperty());
+            }
+
+            @Override
+            protected boolean computeValue() {
+                return (Validation.textIsEmpty(nimField)  ||
+                        Validation.textIsEmpty(nameField) ||
+                        Validation.textIsEmpty(majorField)||
+                        Validation.textIsEmpty(gradeField));
+            }
+        });
     }
 
     private void createNewUser(String nim, String name, String major, String grade) {
-        timeSeconds = 0;
-        FirebaseDatabase.getInstance().getReference("Account").child(nim).child("nim").setValue(nim, null);
-        FirebaseDatabase.getInstance().getReference("Account").child(nim).child("name").setValue(name, null);
-        FirebaseDatabase.getInstance().getReference("Account").child(nim).child("major").setValue(major, null);
-        FirebaseDatabase.getInstance().getReference("Account").child(nim).child("grade").setValue(grade, null);
+        ValueEventListener AccountLogin = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.child("Account").hasChild(nim)) {
+                    nimCheck = false;
+                }else{
+                    nimCheck = true;
+                    FirebaseDatabase.getInstance().getReference("Account").child(nim).child("nim").setValue(nim, null);
+                    FirebaseDatabase.getInstance().getReference("Account").child(nim).child("name").setValue(name, null);
+                    FirebaseDatabase.getInstance().getReference("Account").child(nim).child("major").setValue(major, null);
+                    FirebaseDatabase.getInstance().getReference("Account").child(nim).child("grade").setValue(grade, null);
+                }
+                timeSeconds = 100;
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                System.out.println("The read failed: " + databaseError.getCode());
+            }
+        };
+        FirebaseDatabase.getInstance().getReference().addListenerForSingleValueEvent(AccountLogin);
     }
 
     Scene getScene() {
