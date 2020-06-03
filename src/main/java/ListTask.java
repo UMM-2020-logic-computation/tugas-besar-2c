@@ -185,7 +185,7 @@ public class ListTask {
                 Tasks task = tableTask.getSelectionModel().getSelectedItem(); // Get selected row
                 FirebaseDatabase.getInstance().getReference("Account")
                         .child(user.getNim()).child("tasks").child(task.getId())
-                        .child("status").setValue("Done", null);
+                        .child("status").setValue("Selesai", null);
 
                 Alert alertSuccess = new Alert(Alert.AlertType.NONE, "Tugas berhasil diperbarui", ButtonType.YES, ButtonType.NO);
                 alertSuccess.show();
@@ -219,7 +219,7 @@ public class ListTask {
         FirebaseDatabase.getInstance().getReference("Account").child(nim).child("tasks")
                 .child(idTask).child("deadline").setValue(deadline, null);
         FirebaseDatabase.getInstance().getReference("Account").child(nim).child("tasks")
-                .child(idTask).child("status").setValue("On Progress", null);
+                .child(idTask).child("status").setValue("Belum Selesai", null);
         FirebaseDatabase.getInstance().getReference("Account").child(nim).child("tasks")
                 .child(idTask).child("title").setValue(title, null);
         FirebaseDatabase.getInstance().getReference("Account").child(nim).child("tasks")
