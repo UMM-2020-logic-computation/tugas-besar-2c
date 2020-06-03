@@ -25,3 +25,11 @@ Kerjain App membutuhkan beberapa tools dalam pengembangannya
 
 ### Ayo ikut Kontribusi   
 [Cara berkontribusi!](https://github.com/UMM-2020-logic-computation/tugas-besar-2c/wiki/Bagaimana-cara-ber-kontribusi-pada-project-ini%3F)
+
+
+### Berikut adalah daftar kontributor logo Kerjain App  
+|   | Nama | Logo |
+|---|------|------|
+| 1 | [Asdian](https://github.com/asdian) | <img src="https://i.ibb.co/kQSL9vt/1-Kerjain-App.png" width="20%" alt="#1">|
+| 2 | [Abdul Hamid](https://github.com/Abdulhamid1011) | <img src="https://i.ibb.co/S38cBYb/2-Kerjain-App.png" width="20%" alt="#2">|
+| 3 | [Zainal Arifandi](https://github.com/ZainalArifandi)| <img src="https://i.ibb.co/sC61H1P/3-Kerjain-App.png" width="20%" alt="#3"> |
