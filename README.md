@@ -1,5 +1,10 @@
 # Kerjain App
-Kerjain App adalah aplikasi menejemen tugas yang harus dikerjakan dalam bentuk sebuah daftar.
+Kerjain App adalah aplikasi menejemen tugas yang harus dikerjakan dalam bentuk sebuah daftar.  
+
+Download:  
+[Kerjain App](https://bit.ly/kerjain-app).    
+Aplikasi ini membutuhkan Java SE untuk dapat dijalankan, anda bisa mengunduhnya disini:  
+[Java SE](https://bit.ly/2Yu8yDA)
 
 ### Kebutuhan
 
